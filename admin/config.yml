@@ -35,11 +35,18 @@ collections:
             widget: "list"
             summary: "{{fields.zh}}"
             fields:
+              - {label: "产品ID（英文小写+连字符，创建后勿改，如 box-tissue）", name: "id", widget: "string"}
               - {label: "图标（emoji，无图片时显示）", name: "icon", widget: "string", required: false}
-              - {label: "产品图片（上传后优先于图标显示）", name: "image", widget: "image", required: false}
+              - label: "产品图片（可传多张，第一张为封面）"
+                name: "images"
+                widget: "list"
+                required: false
+                field: {label: 图片, name: image, widget: image}
               - {label: "产品名称（中文）", name: "zh", widget: "string"}
               - {label: "产品名称（英文）", name: "en", widget: "string", required: false}
               - {label: "产品描述（中文）", name: "zhDesc", widget: "text"}
               - {label: "产品描述（英文）", name: "enDesc", widget: "text", required: false}
+              - {label: "详细介绍（中文，详情页显示，每行一条）", name: "detailZh", widget: "text", required: false}
+              - {label: "详细介绍（英文）", name: "detailEn", widget: "text", required: false}
               - {label: "起订量（如 MOQ 5000 盒起）", name: "moq", widget: "string"}
               - {label: "价格区间（如 ¥0.8 - 2.5）", name: "price", widget: "string"}
