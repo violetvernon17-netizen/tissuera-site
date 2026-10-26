@@ -3,6 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+<script>
+if (window.netlifyIdentity) {
+  window.netlifyIdentity.on("init", function(user) {
+    if (!user) {
+      window.netlifyIdentity.on("login", function() {
+        document.location.href = "/admin/";
+      });
+    }
+  });
+}
+</script>
 <title>柯妮尔 KENIER | 商务纸巾定制工厂 - 抽纸·卷纸·大盘纸</title>
 <meta name="description" content="柯妮尔（KENIER）— 专业商务纸巾生产厂家，主营抽纸、卷纸、大盘纸、擦手纸，支持OEM贴牌定制与外贸批发，源头工厂直供。">
 <style>
