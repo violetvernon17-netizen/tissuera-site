@@ -1,0 +1,64 @@
+{
+  "items": [
+    {
+      "icon": "📦",
+      "image": "",
+      "zh": "盒装抽纸 / 软抽",
+      "en": "Boxed / Soft Facial Tissue",
+      "zhDesc": "2/3 层木浆，多规格可选，支持 LOGO 盒装印刷，酒店、餐饮、办公适用。",
+      "enDesc": "2/3-ply virgin pulp, multiple sizes, custom logo printing for hotels, restaurants & offices.",
+      "moq": "MOQ 5000 盒起",
+      "price": "¥0.8 – 2.5"
+    },
+    {
+      "icon": "🧻",
+      "image": "",
+      "zh": "商用小卷纸",
+      "en": "Commercial Toilet Rolls",
+      "zhDesc": "酒店客房、商场卫生间适用，可定制克重与层数，独立包装。",
+      "enDesc": "For hotel rooms & malls. Customizable weight & ply, individually wrapped.",
+      "moq": "MOQ 10000 卷起",
+      "price": "¥0.4 – 1.2"
+    },
+    {
+      "icon": "🌀",
+      "image": "",
+      "zh": "大盘纸（珍宝卷）",
+      "en": "Jumbo Roll Tissue",
+      "zhDesc": "公共场所卫生间专用，大容量更耐用，支持 OEM 贴牌加工。",
+      "enDesc": "For public restrooms, high capacity & durable, OEM processing supported.",
+      "moq": "MOQ 3000 卷起",
+      "price": "¥6.0 – 12.0"
+    },
+    {
+      "icon": "🖐️",
+      "image": "",
+      "zh": "商用擦手纸",
+      "en": "Paper Towels",
+      "zhDesc": "厨房、洗手间通用，吸水性强，抽取式/折叠式多规格。",
+      "enDesc": "For kitchens & washrooms, strong absorption, interfold/multifold options.",
+      "moq": "MOQ 5000 包起",
+      "price": "¥1.5 – 4.0"
+    },
+    {
+      "icon": "✨",
+      "image": "",
+      "zh": "OEM 贴牌定制",
+      "en": "OEM / Private Label",
+      "zhDesc": "按您的品牌定制包装、克重、尺寸，提供从设计到出货一站式服务。",
+      "enDesc": "Custom packaging, weight & size under your brand — design to delivery, one stop.",
+      "moq": "MOQ 可协商",
+      "price": "面议"
+    },
+    {
+      "icon": "🏨",
+      "image": "",
+      "zh": "酒店餐饮用纸套装",
+      "en": "Hotel & Catering Pack",
+      "zhDesc": "方巾、餐巾纸、座垫纸组合供应，提升品牌形象。",
+      "enDesc": "Napkins, serviettes & tray mats combo supply to elevate your brand.",
+      "moq": "MOQ 3000 包起",
+      "price": "¥0.3 – 2.0"
+    }
+  ]
+}
