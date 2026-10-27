@@ -398,7 +398,7 @@ loadSiteData();
 /* ===== 产品分类：导航下拉 + 筛选标签 ===== */
 function catName(c){ return currentLang==='en' ? (CAT_EN[c] || c) : c; }
 function buildCats(){
-  const cats = [...new Set(allProducts.map(p=>p.category).filter(Boolean))];
+  const cats = [...new Set(allProducts.map(p=>(p.category||'').trim()).filter(Boolean))];
   const dd = document.getElementById('catDropdown');
   if(dd){
     dd.innerHTML = `<li><a href="/">${currentLang==='en'?'All Products':'全部产品'}</a></li>` +
@@ -417,7 +417,7 @@ function setCat(c){
   document.getElementById('products').scrollIntoView({behavior:'smooth'});
 }
 function applyCat(c){
-  products = c ? allProducts.filter(p=>p.category===c) : allProducts;
+  products = c ? allProducts.filter(p=>(p.category||'').trim()===c) : allProducts;
   renderProducts(currentLang);
   const t = document.getElementById('catTitle');
   if(c && products.length){ t.style.display='block'; t.textContent = catName(c) + (currentLang==='en' ? ` (${products.length})` : `（${products.length} 款）`); }
