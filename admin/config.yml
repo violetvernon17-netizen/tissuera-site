@@ -35,6 +35,7 @@ collections:
             widget: "list"
             summary: "{{fields.zh}}"
             fields:
+              - {label: "产品分类（决定导航下拉菜单归属）", name: "category", widget: "select", options: ["抽纸","卷纸","悬挂式抽纸","擦手纸","OEM定制","酒店用纸"]}
               - {label: "产品ID（英文小写+连字符，创建后勿改，如 box-tissue）", name: "id", widget: "string"}
               - {label: "图标（emoji，无图片时显示）", name: "icon", widget: "string", required: false}
               - label: "产品图片（可传多张，第一张为封面）"
