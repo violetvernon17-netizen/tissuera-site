@@ -23,6 +23,18 @@ collections:
           - {label: "公司地址（中文）", name: "addressZh", widget: "string"}
           - {label: "公司地址（英文）", name: "addressEn", widget: "string", required: false}
 
+  - name: "categories"
+    label: "🗂 分类管理"
+    folder: "data/categories"
+    create: true
+    delete: true
+    identifier_field: "name"
+    extension: "json"
+    format: "json"
+    fields:
+      - {label: "分类名称（中文）", name: "name", widget: "string"}
+      - {label: "分类英文名称（选填）", name: "nameEn", widget: "string", required: false}
+
   - name: "products"
     label: "📦 产品管理"
     files:
@@ -35,10 +47,14 @@ collections:
             widget: "list"
             summary: "{{fields.zh}}"
             fields:
-              - label: "产品分类（可输入新分类自动创建，如：厨房用纸）"
+              - label: "产品分类（下拉选择，没有想要的分类请先到「🗂 分类管理」新建）"
                 name: "category"
-                widget: "string"
-                hint: "现有分类：抽纸、卷纸、悬挂式抽纸、擦手纸、OEM定制、酒店用纸。输入新名字即创建新分类，注意前后不要多空格"
+                widget: "relation"
+                collection: "categories"
+                value_field: "name"
+                display_fields: ["name"]
+                search_fields: ["name"]
+                required: false
               - {label: "产品ID（英文小写+连字符，创建后勿改，如 box-tissue）", name: "id", widget: "string"}
               - {label: "图标（emoji，无图片时显示）", name: "icon", widget: "string", required: false}
               - label: "产品图片（可传多张，第一张为封面）"
