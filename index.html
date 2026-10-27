@@ -135,6 +135,17 @@ footer li{margin-bottom:9px;font-size:14px}
 footer a:hover{color:var(--accent)}
 .copyright{border-top:1px solid #2c3646;padding-top:20px;text-align:center;font-size:13px}
 
+/* ===== 分类下拉 & 筛选 ===== */
+.has-dropdown{position:relative}
+.dropdown{display:none;position:absolute;top:100%;left:0;background:#fff;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.12);list-style:none;min-width:160px;padding:8px 0;z-index:200}
+.has-dropdown:hover .dropdown{display:block}
+.dropdown li{display:block;margin:0}
+.dropdown a{display:block;padding:9px 20px;font-size:14px;white-space:nowrap}
+.dropdown a:hover{background:#f0f4fb;color:var(--primary)}
+.chips{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:28px}
+.chip{padding:8px 22px;border-radius:24px;background:#fff;border:1px solid #d8e0ec;font-size:14px;cursor:pointer;transition:.2s;font-weight:500}
+.chip:hover,.chip.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+#catTitle{text-align:center;color:var(--dark);margin:36px 0 0;font-size:22px;display:none}
 @media(max-width:860px){
   .contact-wrap{grid-template-columns:1fr}
   .footer-grid{grid-template-columns:1fr 1fr}
@@ -164,7 +175,8 @@ footer a:hover{color:var(--accent)}
     <div class="logo">柯妮尔<span> KENIER</span></div>
     <ul class="nav-links" id="navLinks">
       <li><a href="#home" data-zh="首页" data-en="Home">首页</a></li>
-      <li><a href="#products" data-zh="产品中心" data-en="Products">产品中心</a></li>
+      <li class="has-dropdown"><a href="#products" data-zh="产品中心 ▾" data-en="Products ▾">产品中心 ▾</a>
+        <ul class="dropdown" id="catDropdown"></ul></li>
       <li><a href="#about" data-zh="核心优势" data-en="Why Us">核心优势</a></li>
       <li><a href="#process" data-zh="合作流程" data-en="Process">合作流程</a></li>
       <li><a href="#contact" data-zh="联系我们" data-en="Contact">联系我们</a></li>
@@ -198,6 +210,8 @@ footer a:hover{color:var(--accent)}
       <p data-zh="源头工厂 · 品质纸品 · 支持 OEM 贴牌定制" data-en="Factory-direct · Quality Tissue · OEM / Private Label Available">源头工厂 · 品质纸品 · 支持 OEM 贴牌定制</p>
       <div class="divider"></div>
     </div>
+    <div class="chips" id="catChips"></div>
+    <h3 id="catTitle"></h3>
     <div class="product-grid" id="productGrid"></div>
   </div>
 </section>
@@ -314,6 +328,9 @@ footer a:hover{color:var(--accent)}
 <script>
 /* ===== 产品数据（可自行增删改） ===== */
 let currentLang = 'zh';
+let allProducts = [];
+let currentCat = new URLSearchParams(location.search).get('cat') || '';
+const CAT_EN = {'抽纸':'Facial Tissue','卷纸':'Toilet Rolls','悬挂式抽纸':'Wall-Mounted Tissue','擦手纸':'Paper Towels','OEM定制':'OEM / Custom','酒店用纸':'Hotel Supplies'};
 let products = [
   {icon:"📦", zh:"盒装抽纸 / 软抽", en:"Boxed / Soft Facial Tissue", zhDesc:"2/3 层木浆，多规格可选，支持 LOGO 盒装印刷，酒店、餐饮、办公适用。", enDesc:"2/3-ply virgin pulp, multiple sizes, custom logo printing for hotels, restaurants & offices.", moq:"MOQ 5000 盒起", price:"¥0.8 – 2.5"},
   {icon:"🧻", zh:"商用小卷纸", en:"Commercial Toilet Rolls", zhDesc:"酒店客房、商场卫生间适用，可定制克重与层数，独立包装。", enDesc:"For hotel rooms & malls. Customizable weight & ply, individually wrapped.", moq:"MOQ 10000 卷起", price:"¥0.4 – 1.2"},
@@ -354,6 +371,7 @@ function setLang(lang, btn){
   document.querySelectorAll('[data-zh]').forEach(el=>{
     if(el.dataset[lang]) el.innerHTML = el.dataset[lang];
   });
+  if(allProducts.length){ buildCats(); applyCat(currentCat); }
   renderProducts(lang);
 }
 
@@ -377,6 +395,35 @@ if(savedLang && savedLang !== 'zh'){
 loadSiteData();
 
 /* ===== 从 data/*.json 加载后台可编辑的内容，加载失败则用内置默认 ===== */
+/* ===== 产品分类：导航下拉 + 筛选标签 ===== */
+function catName(c){ return currentLang==='en' ? (CAT_EN[c] || c) : c; }
+function buildCats(){
+  const cats = [...new Set(allProducts.map(p=>p.category).filter(Boolean))];
+  const dd = document.getElementById('catDropdown');
+  if(dd){
+    dd.innerHTML = `<li><a href="/">${currentLang==='en'?'All Products':'全部产品'}</a></li>` +
+      cats.map(c=>`<li><a href="?cat=${encodeURIComponent(c)}">${catName(c)}</a></li>`).join('');
+  }
+  const chips = document.getElementById('catChips');
+  if(chips){
+    chips.innerHTML = `<button class="chip${currentCat===''?' active':''}" onclick="setCat('')">${currentLang==='en'?'All':'全部'}</button>` +
+      cats.map(c=>`<button class="chip${currentCat===c?' active':''}" onclick="setCat('${c.replace(/'/g,"\'")}')">${catName(c)}</button>`).join('');
+  }
+}
+function setCat(c){
+  currentCat = c;
+  history.replaceState(null,'', c ? '?cat='+encodeURIComponent(c) : location.pathname);
+  buildCats(); applyCat(c);
+  document.getElementById('products').scrollIntoView({behavior:'smooth'});
+}
+function applyCat(c){
+  products = c ? allProducts.filter(p=>p.category===c) : allProducts;
+  renderProducts(currentLang);
+  const t = document.getElementById('catTitle');
+  if(c && products.length){ t.style.display='block'; t.textContent = catName(c) + (currentLang==='en' ? ` (${products.length})` : `（${products.length} 款）`); }
+  else t.style.display='none';
+}
+
 async function loadSiteData(){
   try{
     const [prodRes, siteRes] = await Promise.all([
@@ -384,7 +431,7 @@ async function loadSiteData(){
     ]);
     if(prodRes.ok){
       const d = await prodRes.json();
-      if(d.items && d.items.length){ products = d.items; renderProducts(currentLang); }
+      if(d.items && d.items.length){ allProducts = d.items; buildCats(); applyCat(currentCat); }
     }
     if(siteRes.ok){ applySiteData(await siteRes.json()); }
   }catch(e){ /* 使用内置默认内容 */ }
