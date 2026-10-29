@@ -4,6 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>柯妮尔网站后台</title>
+<script>
+/* 修复 OAuth 回调：把 #/access_token=... 还原为 #access_token=... 供 Decap 识别 */
+(function () {
+  var h = window.location.hash;
+  if (h.indexOf('#/access_token=') === 0) {
+    history.replaceState(null, '', window.location.pathname + '#' + h.slice(2));
+  }
+})();
+</script>
 </head>
 <body>
 <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
