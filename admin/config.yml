@@ -1,6 +1,8 @@
 backend:
-  name: git-gateway
+  name: github
+  repo: violetvernon17/tissuera-site
   branch: main
+  base_url: https://kenier-oauth.violetvernon17.workers.dev
 
 media_folder: "images/uploads"
 public_folder: "/images/uploads"
