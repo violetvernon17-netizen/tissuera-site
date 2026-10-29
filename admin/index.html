@@ -5,11 +5,18 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>柯妮尔网站后台</title>
 <script>
-/* 修复 OAuth 回调：把 #/access_token=... 还原为 #access_token=... 供 Decap 识别 */
+/* OAuth 回调处理：把令牌直接写入 Decap 的本地存储，绕开地址栏解析 */
 (function () {
-  var h = window.location.hash;
-  if (h.indexOf('#/access_token=') === 0) {
-    history.replaceState(null, '', window.location.pathname + '#' + h.slice(2));
+  var h = window.location.hash || '';
+  var m = h.match(/access_token=([^&]+)/);
+  if (m && h.indexOf('provider=github') !== -1) {
+    var user = JSON.stringify({ token: m[1], provider: 'github' });
+    try {
+      localStorage.setItem('decap-cms-user', user);
+      localStorage.setItem('netlify-cms-user', user);
+    } catch (e) {}
+    // 清掉 hash，让 Decap 干净启动
+    history.replaceState(null, '', window.location.pathname);
   }
 })();
 </script>
