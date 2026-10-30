@@ -427,7 +427,7 @@ function applyCat(c){
 async function loadSiteData(){
   let apiData = null;
   try{
-    const r = await fetch('/api/data');
+    const r = await fetch('https://kenier-api.violetvernon17.workers.dev/api/data');
     if(r.ok) apiData = await r.json();
   }catch(e){}
   try{

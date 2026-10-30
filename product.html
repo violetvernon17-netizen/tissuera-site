@@ -98,7 +98,7 @@ async function init(){
   const id = new URLSearchParams(location.search).get('id');
   let items = [];
   try{
-    const r = await fetch('/api/data');
+    const r = await fetch('https://kenier-api.violetvernon17.workers.dev/api/data');
     if(r.ok){ const d = await r.json(); if(d && d.items && d.items.length) items = d.items; }
   }catch(e){}
   if(!items.length){
