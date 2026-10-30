@@ -96,12 +96,19 @@ document.querySelectorAll('.lang-switch button').forEach(b=>b.classList.toggle('
 
 async function init(){
   const id = new URLSearchParams(location.search).get('id');
+  let items = [];
   try{
-    const res = await fetch('/data/products.json');
-    const data = await res.json();
-    const items = data.items || [];
-    product = items.find(p=>String(p.id)===String(id)) || items[Number(id)] || null;
+    const r = await fetch('/api/data');
+    if(r.ok){ const d = await r.json(); if(d && d.items && d.items.length) items = d.items; }
   }catch(e){}
+  if(!items.length){
+    try{
+      const res = await fetch('/data/products.json');
+      const data = await res.json();
+      items = data.items || [];
+    }catch(e){}
+  }
+  product = items.find(p=>String(p.id)===String(id)) || items[Number(id)] || null;
   if(!product){
     document.getElementById('app').innerHTML = '<div class="notfound">产品不存在或已下架<br><br><a class="btn" href="/">返回首页</a></div>';
     return;

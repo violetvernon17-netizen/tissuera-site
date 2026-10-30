@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>柯妮尔网站后台</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"PingFang SC","Microsoft YaHei",sans-serif;background:#f4f6fa;color:#333a45}
+.wrap{max-width:1100px;margin:0 auto;padding:24px}
+h1{font-size:20px;color:#0d47a1;margin-bottom:6px}
+.sub{color:#7a8598;font-size:13px;margin-bottom:20px}
+.card{background:#fff;border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,.06);padding:22px;margin-bottom:18px}
+input,textarea,select{width:100%;padding:9px 12px;border:1px solid #d8e0ec;border-radius:8px;font-size:14px;font-family:inherit}
+textarea{resize:vertical}
+label{font-size:13px;font-weight:600;color:#333a45;display:block;margin:12px 0 5px}
+.btn{background:#0d47a1;color:#fff;border:none;padding:10px 22px;border-radius:8px;font-size:14px;cursor:pointer;font-weight:600}
+.btn:hover{background:#0a3578}
+.btn-accent{background:#ff8f00}.btn-accent:hover{background:#e67c00}
+.btn-sm{padding:5px 12px;font-size:12px}
+.btn-danger{background:#c62828}.btn-danger:hover{background:#a31f1f}
+.tabs{display:flex;gap:8px;margin-bottom:16px}
+.tab{padding:9px 20px;border-radius:8px;background:#e8edf5;cursor:pointer;font-size:14px;font-weight:600;border:none}
+.tab.active{background:#0d47a1;color:#fff}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.pd-list{display:flex;flex-direction:column;gap:8px;max-height:520px;overflow:auto}
+.pd-item{padding:10px 14px;border:1px solid #e3e9f2;border-radius:8px;cursor:pointer;font-size:14px;display:flex;justify-content:space-between;align-items:center}
+.pd-item:hover,.pd-item.active{border-color:#0d47a1;background:#eef3fb}
+.img-grid{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+.img-box{width:90px;text-align:center;font-size:12px;color:#7a8598}
+.img-box img{width:90px;height:90px;object-fit:cover;border-radius:8px;border:1px solid #e3e9f2;display:block}
+.img-box .ops{margin-top:4px;display:flex;gap:4px;justify-content:center}
+.cat-row{display:grid;grid-template-columns:1fr 1fr 90px;gap:10px;margin-bottom:10px;align-items:center}
+.msg{padding:10px 16px;border-radius:8px;margin-bottom:14px;font-size:14px;display:none}
+.msg.ok{display:block;background:#e6f6ec;color:#1e7d42}
+.msg.err{display:block;background:#fdecea;color:#c62828}
+#loginCard{max-width:400px;margin:12vh auto}
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.layout{display:grid;grid-template-columns:280px 1fr;gap:18px}
+@media(max-width:800px){.layout{grid-template-columns:1fr}.row2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div id="loginCard" class="card" style="display:none">
+  <h1>柯妮尔网站后台</h1>
+  <p class="sub">请输入管理密码登录</p>
+  <label>管理密码</label>
+  <input type="password" id="pwd" placeholder="请输入密码">
+  <div style="margin-top:16px"><button class="btn" style="width:100%" onclick="doLogin()">登 录</button></div>
+  <div id="loginMsg" class="msg err"></div>
+</div>
+
+<div id="app" style="display:none">
+<div class="wrap">
+  <div class="topbar">
+    <div><h1>柯妮尔网站后台</h1><p class="sub">保存后网站立即更新 · 图片上传后自动生效</p></div>
+    <div style="display:flex;gap:10px;align-items:center">
+      <span id="saveState" style="font-size:13px;color:#7a8598"></span>
+      <button class="btn btn-accent" onclick="saveAll()">💾 保存并发布</button>
+      <button class="btn btn-sm" onclick="doLogout()">退出</button>
+    </div>
+  </div>
+  <div id="msg" class="msg"></div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('products',this)">📦 产品管理</button>
+    <button class="tab" onclick="showTab('cats',this)">🗂 分类管理</button>
+    <button class="tab" onclick="showTab('site',this)">🏠 首页与联系方式</button>
+  </div>
+
+  <div id="tab-products" class="layout">
+    <div class="card"><div style="display:flex;justify-content:space-between;margin-bottom:10px"><b>产品列表</b><button class="btn btn-sm" onclick="addProduct()">+ 新增</button></div><div class="pd-list" id="pdList"></div></div>
+    <div class="card" id="pdForm"><p style="color:#7a8598">← 从左侧选择产品，或点"新增"</p></div>
+  </div>
+
+  <div id="tab-cats" class="card" style="display:none">
+    <div style="display:flex;justify-content:space-between;margin-bottom:14px"><b>分类列表（导航下拉菜单 = 分类管理里的分类 + 产品使用的分类，自动合并）</b><button class="btn btn-sm" onclick="addCat()">+ 新增分类</button></div>
+    <div id="catList"></div>
+  </div>
+
+  <div id="tab-site" class="card" style="display:none"><div id="siteForm"></div></div>
+</div>
+</div>
+
+<script>
+const TOKEN_KEY = 'kenier-admin-token';
+let token = localStorage.getItem(TOKEN_KEY) || '';
+let data = { site:{}, categories:[], items:[] };
+let cur = -1;
+
+function show(el,on){ document.getElementById(el).style.display = on?'block':'none'; }
+function setMsg(t,ok){ const m=document.getElementById('msg'); m.className='msg '+(ok?'ok':'err'); m.textContent=t; setTimeout(()=>m.className='msg',4000); }
+
+async function api(path, opts={}) {
+  opts.headers = Object.assign({'Authorization':'Bearer '+token}, opts.headers||{});
+  if (opts.json !== undefined) { opts.method='POST'; opts.headers['Content-Type']='application/json'; opts.body=JSON.stringify(opts.json); }
+  const r = await fetch(path, opts);
+  const j = await r.json().catch(()=>null);
+  if (!r.ok) throw new Error((j&&j.error) || ('请求失败 '+r.status));
+  return j;
+}
+
+async function doLogin(){
+  try{
+    const j = await api('/api/login', { json:{ password: document.getElementById('pwd').value } });
+    token = j.token; localStorage.setItem(TOKEN_KEY, token); boot();
+  }catch(e){ const m=document.getElementById('loginMsg'); m.className='msg err'; m.textContent=e.message; }
+}
+function doLogout(){ localStorage.removeItem(TOKEN_KEY); location.reload(); }
+
+async function boot(){
+  show('loginCard',false); show('app',true);
+  try{
+    const j = await api('/api/data');
+    if (j) { data = j; }
+    else { // 首次使用：读取仓库里的静态数据作为起点
+      const [p,s] = await Promise.all([fetch('/data/products.json'), fetch('/data/site.json')]);
+      data.items = (await p.json()).items || [];
+      data.site = await s.json();
+      data.categories = [];
+      setMsg('首次使用：已载入现有产品，修改后点"保存并发布"即可', true);
+    }
+  }catch(e){ setMsg('数据加载失败：'+e.message, false); }
+  renderAll();
+}
+
+function renderAll(){ renderPdList(); renderCats(); renderSite(); }
+function showTab(name, btn){
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active')); btn.classList.add('active');
+  show('tab-products', name==='products'); show('tab-cats', name==='cats'); show('tab-site', name==='site');
+}
+
+/* ===== 产品 ===== */
+function renderPdList(){
+  document.getElementById('pdList').innerHTML = data.items.map((p,i)=>`<div class="pd-item ${i===cur?'active':''}" onclick="editPd(${i})"><span>${p.icon||'📦'} ${p.zh||'(未命名)'}</span><span style="color:#7a8598;font-size:12px">${p.category||''}</span></div>`).join('') || '<p style="color:#7a8598">还没有产品</p>';
+}
+function addProduct(){
+  data.items.push({ id:'p'+Date.now(), category:'', icon:'📦', images:[], zh:'', en:'', zhDesc:'', enDesc:'', detailZh:'', detailEn:'', moq:'', price:'' });
+  editPd(data.items.length-1);
+}
+function delProduct(i){ if(!confirm('确定删除这个产品？')) return; data.items.splice(i,1); cur=-1; renderPdList(); document.getElementById('pdForm').innerHTML='<p style="color:#7a8598">已删除，记得点"保存并发布"</p>'; }
+function editPd(i){
+  cur = i; renderPdList(); const p = data.items[i];
+  const cats = [...new Set([...(data.categories||[]).map(c=>c.name), ...data.items.map(x=>x.category).filter(Boolean)])];
+  document.getElementById('pdForm').innerHTML = `
+    <div style="display:flex;justify-content:space-between"><b>编辑产品</b><button class="btn btn-sm btn-danger" onclick="delProduct(${i})">删除产品</button></div>
+    <div class="row2">
+      <div><label>产品名称（中文）*</label><input value="${esc(p.zh)}" onchange="u(${i},'zh',this.value)"></div>
+      <div><label>产品名称（英文）</label><input value="${esc(p.en)}" onchange="u(${i},'en',this.value)"></div>
+    </div>
+    <div class="row2">
+      <div><label>产品分类</label><select onchange="u(${i},'category',this.value)">${cats.map(c=>`<option ${c===p.category?'selected':''}>${esc(c)}</option>`).join('')}<option value="__new__">＋ 新建分类…</option></select></div>
+      <div><label>图标（emoji，无图片时显示）</label><input value="${esc(p.icon)}" onchange="u(${i},'icon',this.value)"></div>
+    </div>
+    <label>产品描述（中文，首页卡片显示）</label><textarea rows="2" onchange="u(${i},'zhDesc',this.value)">${esc(p.zhDesc)}</textarea>
+    <label>产品描述（英文）</label><textarea rows="2" onchange="u(${i},'enDesc',this.value)">${esc(p.enDesc)}</textarea>
+    <label>详细介绍（中文，详情页显示，每行一条）</label><textarea rows="5" onchange="u(${i},'detailZh',this.value)">${esc(p.detailZh)}</textarea>
+    <label>详细介绍（英文）</label><textarea rows="3" onchange="u(${i},'detailEn',this.value)">${esc(p.enDesc2||p.detailEn||'')}"></textarea>
+    <div class="row2">
+      <div><label>起订量（如 MOQ 5000 盒起）</label><input value="${esc(p.moq)}" onchange="u(${i},'moq',this.value)"></div>
+      <div><label>价格区间（如 ¥0.8 - 2.5）</label><input value="${esc(p.price)}" onchange="u(${i},'price',this.value)"></div>
+    </div>
+    <label>产品图片（第一张为封面，可传多张）</label>
+    <div class="img-grid">${(p.images||[]).map((src,k)=>`<div class="img-box"><img src="${src}"><div class="ops"><button class="btn btn-sm" onclick="mvImg(${i},${k},-1)">←</button><button class="btn btn-sm btn-danger" onclick="delImg(${i},${k})">删</button><button class="btn btn-sm" onclick="mvImg(${i},${k},1)">→</button></div></div>`).join('')}</div>
+    <div style="margin-top:10px"><input type="file" accept="image/*" multiple onchange="uploadImg(${i},this)"></div>`;
+}
+function u(i,k,v){ data.items[i][k]=v; if(k==='zh'||k==='category') renderPdList(); }
+function esc(s){ return String(s==null?'':s).replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+async function uploadImg(i, input){
+  for (const f of input.files){
+    const fd = new FormData(); fd.append('file', f);
+    try{ const j = await api('/api/upload', { method:'POST', body:fd }); data.items[i].images = data.items[i].images||[]; data.items[i].images.push(j.url); }
+    catch(e){ setMsg('图片上传失败：'+e.message,false); }
+  }
+  editPd(i); setMsg('图片已上传，记得点"保存并发布"', true);
+}
+function delImg(i,k){ data.items[i].images.splice(k,1); editPd(i); }
+function mvImg(i,k,d){ const a=data.items[i].images, j=k+d; if(j<0||j>=a.length) return; [a[k],a[j]]=[a[j],a[k]]; editPd(i); }
+
+/* ===== 分类 ===== */
+function renderCats(){
+  document.getElementById('catList').innerHTML = (data.categories||[]).map((c,i)=>`<div class="cat-row"><input value="${esc(c.name)}" placeholder="分类名称（中文）" onchange="data.categories[${i}].name=this.value"><input value="${esc(c.nameEn||'')}" placeholder="英文名称（选填）" onchange="data.categories[${i}].nameEn=this.value"><button class="btn btn-sm btn-danger" onclick="data.categories.splice(${i},1);renderCats()">删除</button></div>`).join('') || '<p style="color:#7a8598">暂无分类（也可直接在产品里输入新分类名，自动创建）</p>';
+}
+function addCat(){ data.categories = data.categories||[]; data.categories.push({name:'',nameEn:''}); renderCats(); }
+
+/* ===== 站点文案 ===== */
+function renderSite(){
+  const s = data.site||{};
+  const f = [['heroTitleZh','首页主标题（中文）'],['heroTitleEn','首页主标题（英文）'],['heroDescZh','首页副标题（中文）'],['heroDescEn','首页副标题（英文）'],['email','商务邮箱'],['wechat','微信号'],['addressZh','公司地址（中文）'],['addressEn','公司地址（英文）']];
+  document.getElementById('siteForm').innerHTML = f.map(([k,t])=>`<label>${t}</label><textarea rows="${k.indexOf('Desc')>=0?3:1}" onchange="data.site['${k}']=this.value">${esc(s[k])}</textarea>`).join('');
+}
+
+/* ===== 保存 ===== */
+async function saveAll(){
+  document.getElementById('saveState').textContent = '保存中…';
+  try{ await api('/api/save', { json:data }); document.getElementById('saveState').textContent='✅ 已发布'; setMsg('已保存，网站立即更新（可刷新前台查看）', true); }
+  catch(e){ document.getElementById('saveState').textContent=''; setMsg('保存失败：'+e.message, false); }
+}
+
+if (token) { api('/api/data').then(boot).catch(()=>{ localStorage.removeItem(TOKEN_KEY); show('loginCard',true); }); }
+else show('loginCard',true);
+</script>
+</body>
+</html>

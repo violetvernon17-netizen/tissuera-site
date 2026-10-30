@@ -398,7 +398,7 @@ loadSiteData();
 /* ===== 产品分类：导航下拉 + 筛选标签 ===== */
 function catName(c){ return currentLang==='en' ? (CAT_EN[c] || c) : c; }
 function buildCats(){
-  const cats = [...new Set(allProducts.map(p=>(p.category||'').trim()).filter(Boolean))];
+  const cats = [...new Set([...allProducts.map(p=>(p.category||'').trim()).filter(Boolean), ...(window.__catsExtra||[])])];
   const dd = document.getElementById('catDropdown');
   if(dd){
     dd.innerHTML = `<li><a href="/">${currentLang==='en'?'All Products':'全部产品'}</a></li>` +
@@ -425,16 +425,27 @@ function applyCat(c){
 }
 
 async function loadSiteData(){
+  let apiData = null;
+  try{
+    const r = await fetch('/api/data');
+    if(r.ok) apiData = await r.json();
+  }catch(e){}
   try{
     const [prodRes, siteRes] = await Promise.all([
       fetch('/data/products.json'), fetch('/data/site.json')
     ]);
     if(prodRes.ok){
       const d = await prodRes.json();
-      if(d.items && d.items.length){ allProducts = d.items; buildCats(); applyCat(currentCat); }
+      if(d.items && d.items.length) allProducts = d.items;
     }
     if(siteRes.ok){ applySiteData(await siteRes.json()); }
-  }catch(e){ /* 使用内置默认内容 */ }
+  }catch(e){}
+  if(apiData){
+    if(apiData.items && apiData.items.length) allProducts = apiData.items;
+    if(apiData.site) applySiteData(apiData.site);
+    window.__catsExtra = (apiData.categories||[]).map(c=>c.name).filter(Boolean);
+  }
+  buildCats(); applyCat(currentCat);
 }
 function applySiteData(s){
   const t = document.getElementById('heroTitle');
